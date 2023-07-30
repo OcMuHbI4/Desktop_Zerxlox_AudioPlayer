@@ -1,4 +1,5 @@
 import javax.swing.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -13,6 +14,17 @@ public class BootPlayer extends JFrame implements ActionListener {
     JFrame mainPlayerWindow; //Окно плеера
     JButton playButton, chooseDirectionButton; //Кнопка воспроизведения
     BootPlayer(){
+
+        chooseWindow.setAcceptAllFileFilterUsed(false);
+        FileNameExtensionFilter filterMp3 = new FileNameExtensionFilter(".mp3", "mp3");
+        FileNameExtensionFilter filterWav = new FileNameExtensionFilter(".wav", "wav");
+        FileNameExtensionFilter filterAudio =
+                new FileNameExtensionFilter("Audio files", "mp3", "wav");
+       // FileNameExtensionFilter filterFlac = new FileNameExtensionFilter(".flac", "flac");
+
+        chooseWindow.addChoosableFileFilter(filterMp3);
+        chooseWindow.addChoosableFileFilter(filterWav);
+        chooseWindow.addChoosableFileFilter(filterAudio);
 
         mainPlayerWindow = new JFrame("Zerxlox Player");
         mainPlayerWindow.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -55,11 +67,16 @@ public class BootPlayer extends JFrame implements ActionListener {
 
         if (e.getSource() == chooseDirectionButton)
         {
-            int response = chooseWindow.showOpenDialog(this);
+            File musicDirectory = new File("C:/Users/Zerxlox/Music");
+
+            chooseWindow.setCurrentDirectory(musicDirectory);
+
+            int response = chooseWindow.showOpenDialog(null);
             if (response == JFileChooser.APPROVE_OPTION)
             {
             selectedFile = new File(chooseWindow.getSelectedFile().getAbsolutePath());
             selectedFilePath =  selectedFile.toString();
+            System.out.println(selectedFilePath);
             }
         }
     }
@@ -73,8 +90,8 @@ public class BootPlayer extends JFrame implements ActionListener {
                 //threadCount++;
             }
 
-            if (selectedFilePath.trim().endsWith(".wav")){
-                PlatSoundWav.play(selectedFilePath.trim());
+            if (selectedFilePath.trim().endsWith(".wav") /*|| selectedFilePath.trim().endsWith(".flac")*/ ){
+                PlaySoundWav.play(selectedFilePath.trim());
                // threadCount++;
             }
         }
