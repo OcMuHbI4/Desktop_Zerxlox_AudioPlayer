@@ -1,0 +1,9 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="Desktop_Zerxlox_Player:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/Desktop_Zerxlox_Player_jar</output-path>
+    <root id="archive" name="Desktop_Zerxlox_Player.jar">
+      <element id="module-output" name="Desktop_Zerxlox_Player" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/libraries/jlayer-1.0.1.jar" path-in-jar="/" />
+    </root>
+  </artifact>
+</component>
