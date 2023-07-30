@@ -1,5 +1,4 @@
 import javax.swing.*;
-import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -75,7 +74,7 @@ public class BootPlayer extends JFrame implements ActionListener {
             }
 
             if (selectedFilePath.trim().endsWith(".wav")){
-                SoundWav.play(selectedFilePath.trim());
+                PlatSoundWav.play(selectedFilePath.trim());
                // threadCount++;
             }
         }

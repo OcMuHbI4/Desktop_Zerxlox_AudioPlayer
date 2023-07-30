@@ -10,7 +10,7 @@ import javax.sound.sampled.LineListener;
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.UnsupportedAudioFileException;
 
-public class SoundWav implements AutoCloseable {
+public class PlatSoundWav implements AutoCloseable {
     private static boolean released = false;
     private AudioInputStream stream = null;
     private static Clip clip = null;
@@ -49,7 +49,7 @@ public class SoundWav implements AutoCloseable {
             exc.printStackTrace();
         } catch (InterruptedException exc) {}
     }
-    public SoundWav(File f) {
+    public PlatSoundWav(File f) {
         try {
             stream = AudioSystem.getAudioInputStream(f);
             clip = AudioSystem.getClip();
@@ -152,9 +152,9 @@ public class SoundWav implements AutoCloseable {
     }
 
     // Статический метод, для удобства
-    public static SoundWav playSound(String path) {
+    public static PlatSoundWav playSound(String path) {
         File f = new File(path);
-        SoundWav snd = new SoundWav(f);
+        PlatSoundWav snd = new PlatSoundWav(f);
         snd.play();
         return snd;
     }
