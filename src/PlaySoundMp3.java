@@ -6,16 +6,19 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 
-public class PlaySoundMp3 extends Thread {
 
+
+public class PlaySoundMp3 extends Thread {
+    static Player player;
     static void playMp3( String songName) {
 
-        File soundFile = new File(BootPlayer.selectedFilePath);
+        File soundFile = new File(BootPlayer.selectedCellPath);
 
         try {
+
             FileInputStream fis = new FileInputStream(soundFile);
             BufferedInputStream bis = new BufferedInputStream(fis);
-            Player player = new Player(bis);
+            player = new Player(bis);
             player.play();
         } catch (FileNotFoundException ex) {
             throw new RuntimeException(ex);
@@ -24,4 +27,5 @@ public class PlaySoundMp3 extends Thread {
         }
 
     }
+
 }

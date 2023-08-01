@@ -1,52 +1,139 @@
 import javax.swing.*;
+import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+
 
 public class BootPlayer extends JFrame implements ActionListener {
 
-    //int threadCount = 0;
-    static String selectedFilePath;
-    JFileChooser chooseWindow = new JFileChooser();
-    File selectedFile;
+    public static String selectedFilePath;
+    JScrollPane scrollPaneForTrackList;
+    List<ArrayList<String>> trackListData = new ArrayList<>();
     Thread thread = new Thread(new Runner());
+    static String selectedCellPath;
+
+    String[][] trackListDataString;
+    String[] trackListColumns = new String[2];
+    static String selectedDirectoryPath;
+    JTable trackListTable;
+    JFileChooser chooseWindow = new JFileChooser();
+    File selectedDirectory;
+
     JFrame mainPlayerWindow; //Окно плеера
     JButton playButton, chooseDirectionButton; //Кнопка воспроизведения
-    BootPlayer(){
 
-        chooseWindow.setAcceptAllFileFilterUsed(false);
-        FileNameExtensionFilter filterMp3 = new FileNameExtensionFilter(".mp3", "mp3");
-        FileNameExtensionFilter filterWav = new FileNameExtensionFilter(".wav", "wav");
-        FileNameExtensionFilter filterAudio =
-                new FileNameExtensionFilter("Audio files", "mp3", "wav");
-       // FileNameExtensionFilter filterFlac = new FileNameExtensionFilter(".flac", "flac");
+    void makeTrackListTable(String path){
 
-        chooseWindow.addChoosableFileFilter(filterMp3);
-        chooseWindow.addChoosableFileFilter(filterWav);
-        chooseWindow.addChoosableFileFilter(filterAudio);
+        //Блок инициализации выбранной дериктории пользователем
+        trackListColumns[0] = "Track_Name";
+        trackListColumns[1] = "Track_Directory";
+        File dir = new File(path); //path указывает на директорию
+        File[] arrFiles = dir.listFiles();
+
+        for (int i = 0; i < arrFiles.length; i++) {
+            File extProv = new File(arrFiles[i].getName());
+            if (extProv.toString().endsWith(".mp3") || extProv.toString().endsWith(".wav")) {
+                File nameOfCurrentFileFile = new File(arrFiles[i].getName());
+                String nameOfCurrentFileString  = new String(nameOfCurrentFileFile.toString());
+                String fullPathOfCurrentFileString  = new String(arrFiles[i].toString());
+                ArrayList<String> trackListData1 = new ArrayList<>();
+
+                trackListData1.add(nameOfCurrentFileString);
+                trackListData1.add(fullPathOfCurrentFileString);
+                trackListData.add(trackListData1);
+            }
+        }
+
+        trackListDataString = new String[trackListData.size()][2];
+
+        for (int i = 0; i < trackListData.size(); i++) {
+            trackListDataString[i][0] = trackListData.get(i).get(0).toString();
+            trackListDataString[i][1] = trackListData.get(i).get(1).toString();
+        }
+
+        trackListTable = new JTable(trackListDataString, trackListColumns);
+        scrollPaneForTrackList  = new JScrollPane(trackListTable);
+
+        JPanel tablePanel = new JPanel(); //Панель с таблицей (трек-листом)
+        tablePanel.add(scrollPaneForTrackList);
+
+        mainPlayerWindow.getContentPane().add(tablePanel);
+        mainPlayerWindow.pack();
+        mainPlayerWindow.show();
+    }
+    BootPlayer() {
+
+
+
+
+
+
+
+        //Блок с настройкой фильтрации поиска в выборе файла
+//        chooseWindow.setAcceptAllFileFilterUsed(false);
+//
+//        FileNameExtensionFilter filterMp3 = new FileNameExtensionFilter(".mp3", "mp3");
+//        FileNameExtensionFilter filterWav = new FileNameExtensionFilter(".wav", "wav");
+//        FileNameExtensionFilter filterAudio =
+//                new FileNameExtensionFilter("Audio files", "mp3", "wav");
+//
+//        chooseWindow.addChoosableFileFilter(filterMp3);
+//        chooseWindow.addChoosableFileFilter(filterWav);
+//        chooseWindow.addChoosableFileFilter(filterAudio);
+
+        chooseWindow.setFileFilter(new FileFilter() {
+            @Override
+            public boolean accept(File f) {
+                return f.isDirectory();
+            }
+
+            @Override
+            public String getDescription() {
+                return null;
+            }
+        });
+
+        //Создание основного окна
 
         mainPlayerWindow = new JFrame("Zerxlox Player");
         mainPlayerWindow.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        mainPlayerWindow.setSize(500, 250);
+        mainPlayerWindow.setSize(500, 500);
         mainPlayerWindow.setLocationRelativeTo(null);
+        mainPlayerWindow.setLayout(new GridLayout());
 
-//        JTable trackList = new JTable();
-//        trackList.setPreferredSize(new Dimension(100,300));
+        //Создание кнопок
 
-        chooseDirectionButton = new JButton("Выбрать файл");
+        chooseDirectionButton = new JButton("Выбрать директорию");
         chooseDirectionButton.setSize(100,50);
         chooseDirectionButton.addActionListener(this);
 
-        playButton = new JButton("Воспроизвести");
+        playButton = new JButton("Воспроизвести выбранный трек");
         playButton.setSize(100,50);
         playButton.addActionListener(this);
 
-        JPanel jpnl = new JPanel();
-        jpnl.add(chooseDirectionButton);
-        jpnl.add(playButton);
+        //Создание таблицы
+//        trackListTable = new JTable(trackListDataString, trackListColumns);
+//        scrollPaneForTrackList  = new JScrollPane(trackListTable);
 
-        mainPlayerWindow.getContentPane().add(jpnl);
+
+        //Создание панелей и расположение элементов на одну панель
+
+        JPanel buttonsPanel = new JPanel(); //Панель с кнопками
+        buttonsPanel.add(chooseDirectionButton);
+        buttonsPanel.add(playButton);
+
+//        JPanel tablePanel = new JPanel(); //Панель с таблицей (трек-листом)
+//        tablePanel.add(scrollPaneForTrackList);
+
+        mainPlayerWindow.getContentPane().add(buttonsPanel);
+//        mainPlayerWindow.getContentPane().add(tablePanel);
         mainPlayerWindow.pack();
         mainPlayerWindow.show();
 
@@ -54,16 +141,7 @@ public class BootPlayer extends JFrame implements ActionListener {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        if (e.getSource() == playButton)
-        {
-            thread.start();
-//            if (threadCount == 0) {
-//
-//            } else {
-//                thread.interrupt();
-//                thread.start();
-//            }
-        }
+
 
         if (e.getSource() == chooseDirectionButton)
         {
@@ -71,13 +149,26 @@ public class BootPlayer extends JFrame implements ActionListener {
 
             chooseWindow.setCurrentDirectory(musicDirectory);
 
+            chooseWindow.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+
             int response = chooseWindow.showOpenDialog(null);
             if (response == JFileChooser.APPROVE_OPTION)
             {
-            selectedFile = new File(chooseWindow.getSelectedFile().getAbsolutePath());
-            selectedFilePath =  selectedFile.toString();
-            System.out.println(selectedFilePath);
+            selectedDirectory = new File(chooseWindow.getSelectedFile().getAbsolutePath());
+
+            selectedDirectoryPath =  selectedDirectory.toString();
+            makeTrackListTable(selectedDirectoryPath);
+
             }
+        }
+
+        if (e.getSource() == playButton & trackListTable.
+                isCellSelected(trackListTable.getSelectedRow(),trackListTable.getSelectedColumn()))
+        {
+            selectedCellPath =  trackListTable.getValueAt(trackListTable.getSelectedRow(),1).toString();
+
+            thread.start();
+
         }
     }
 
@@ -85,50 +176,15 @@ public class BootPlayer extends JFrame implements ActionListener {
     {
         @Override
         public void run(){
-            if (selectedFilePath.trim().endsWith(".mp3")){
-                PlaySoundMp3.playMp3(selectedFilePath.trim());
-                //threadCount++;
+            if (selectedCellPath.trim().endsWith(".mp3")){
+                PlaySoundMp3.playMp3(selectedCellPath.trim());
             }
 
-            if (selectedFilePath.trim().endsWith(".wav") /*|| selectedFilePath.trim().endsWith(".flac")*/ ){
-                PlaySoundWav.play(selectedFilePath.trim());
-               // threadCount++;
+            if (selectedCellPath.trim().endsWith(".wav") /*|| selectedFilePath.trim().endsWith(".flac")*/ ){
+                PlaySoundWav.play(selectedCellPath.trim());
             }
         }
     }
 }
-
-
-//        Boolean couldFindASong = false;
-//
-//        do {
-//
-//
-//        songName=  JOptionPane.showInputDialog(null,
-//                "Введите название песни с рабочего стола",
-//                "Воспроизведение песни", -1);
-//
-//
-//        if (!songName.trim().isEmpty()) {
-//
-//            songName = songName.trim() + ".wav";
-//
-//            couldFindASong = true;
-//
-//            play(songName);
-//        }
-//
-//        } while (couldFindASong);
-
-//    @Override
-//    public void actionPerformed(ActionEvent e) {
-//
-//
-//                String songName= txtArea.getText();
-//                songName = songName.trim() + ".wav";
-//
-//                Sound.play(songName);
-//
-//}
 
 

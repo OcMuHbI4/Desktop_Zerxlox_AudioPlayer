@@ -19,7 +19,7 @@ public class PlaySoundWav implements AutoCloseable {
 
     static public void play(String songName){
         try {
-            File soundFile = new File(BootPlayer.selectedFilePath); //Звуковой файл
+            File soundFile = new File(BootPlayer.selectedCellPath); //Звуковой файл
 
             //Получаем AudioInputStream
             //Вот тут могут полететь IOException и UnsupportedAudioFileException
@@ -42,12 +42,12 @@ public class PlaySoundWav implements AutoCloseable {
 
             //Если не запущено других потоков, то стоит подождать, пока клип не закончится
             //В GUI-приложениях следующие 3 строчки не понадобятся
-            Thread.sleep(clip.getMicrosecondLength()/1000);
-            clip.stop(); //Останавливаем
-            clip.close(); //Закрываем
+//            Thread.sleep(clip.getMicrosecondLength()/1000);
+//            clip.stop(); //Останавливаем
+//            clip.close(); //Закрываем
         } catch (IOException | UnsupportedAudioFileException | LineUnavailableException exc) {
             exc.printStackTrace();
-        } catch (InterruptedException exc) {}
+        }
     }
     public PlaySoundWav(File f) {
         try {
