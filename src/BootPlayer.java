@@ -1,6 +1,8 @@
 import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
+import javax.swing.filechooser.FileSystemView;
+import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -12,11 +14,12 @@ import java.util.List;
 
 
 public class BootPlayer extends JFrame implements ActionListener {
-
+    JPanel tablePanel = new JPanel();
     public static String selectedFilePath;
     JScrollPane scrollPaneForTrackList;
-    List<ArrayList<String>> trackListData = new ArrayList<>();
-    Thread thread = new Thread(new Runner());
+
+    boolean notInitTable = true;
+    boolean canPlay = true;
     static String selectedCellPath;
 
     String[][] trackListDataString;
@@ -27,7 +30,7 @@ public class BootPlayer extends JFrame implements ActionListener {
     File selectedDirectory;
 
     JFrame mainPlayerWindow; //Окно плеера
-    JButton playButton, chooseDirectionButton; //Кнопка воспроизведения
+    JButton playButton, chooseDirectionButton, stopButton; //Кнопка воспроизведения
 
     void makeTrackListTable(String path){
 
@@ -36,6 +39,7 @@ public class BootPlayer extends JFrame implements ActionListener {
         trackListColumns[1] = "Track_Directory";
         File dir = new File(path); //path указывает на директорию
         File[] arrFiles = dir.listFiles();
+        List<ArrayList<String>> trackListData = new ArrayList<>();
 
         for (int i = 0; i < arrFiles.length; i++) {
             File extProv = new File(arrFiles[i].getName());
@@ -58,35 +62,29 @@ public class BootPlayer extends JFrame implements ActionListener {
             trackListDataString[i][1] = trackListData.get(i).get(1).toString();
         }
 
-        trackListTable = new JTable(trackListDataString, trackListColumns);
-        scrollPaneForTrackList  = new JScrollPane(trackListTable);
 
-        JPanel tablePanel = new JPanel(); //Панель с таблицей (трек-листом)
-        tablePanel.add(scrollPaneForTrackList);
 
-        mainPlayerWindow.getContentPane().add(tablePanel);
+        if (notInitTable) {
+
+            trackListTable = new JTable(trackListDataString, trackListColumns);
+            scrollPaneForTrackList  = new JScrollPane(trackListTable);
+            tablePanel = new JPanel(); //Панель с таблицей (трек-листом)
+            tablePanel.add(scrollPaneForTrackList);
+            mainPlayerWindow.getContentPane().add(tablePanel);
+
+            notInitTable = false;
+        } else {
+            tablePanel.remove(0);
+            scrollPaneForTrackList.remove(0);
+            trackListTable = new JTable(trackListDataString, trackListColumns);
+            scrollPaneForTrackList  = new JScrollPane(trackListTable);
+            tablePanel.add(scrollPaneForTrackList);
+            mainPlayerWindow.getContentPane().add(tablePanel);
+        }
         mainPlayerWindow.pack();
         mainPlayerWindow.show();
     }
     BootPlayer() {
-
-
-
-
-
-
-
-        //Блок с настройкой фильтрации поиска в выборе файла
-//        chooseWindow.setAcceptAllFileFilterUsed(false);
-//
-//        FileNameExtensionFilter filterMp3 = new FileNameExtensionFilter(".mp3", "mp3");
-//        FileNameExtensionFilter filterWav = new FileNameExtensionFilter(".wav", "wav");
-//        FileNameExtensionFilter filterAudio =
-//                new FileNameExtensionFilter("Audio files", "mp3", "wav");
-//
-//        chooseWindow.addChoosableFileFilter(filterMp3);
-//        chooseWindow.addChoosableFileFilter(filterWav);
-//        chooseWindow.addChoosableFileFilter(filterAudio);
 
         chooseWindow.setFileFilter(new FileFilter() {
             @Override
@@ -104,11 +102,8 @@ public class BootPlayer extends JFrame implements ActionListener {
 
         mainPlayerWindow = new JFrame("Zerxlox Player");
         mainPlayerWindow.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        mainPlayerWindow.setSize(500, 500);
         mainPlayerWindow.setLocationRelativeTo(null);
-        mainPlayerWindow.setLayout(new GridLayout());
-
-        //Создание кнопок
+        mainPlayerWindow.setLayout(new GridBagLayout());
 
         chooseDirectionButton = new JButton("Выбрать директорию");
         chooseDirectionButton.setSize(100,50);
@@ -118,22 +113,16 @@ public class BootPlayer extends JFrame implements ActionListener {
         playButton.setSize(100,50);
         playButton.addActionListener(this);
 
-        //Создание таблицы
-//        trackListTable = new JTable(trackListDataString, trackListColumns);
-//        scrollPaneForTrackList  = new JScrollPane(trackListTable);
-
-
-        //Создание панелей и расположение элементов на одну панель
+        stopButton = new JButton("Остановить");
+        stopButton.setSize(100,50);
+        stopButton.addActionListener(this);
 
         JPanel buttonsPanel = new JPanel(); //Панель с кнопками
         buttonsPanel.add(chooseDirectionButton);
         buttonsPanel.add(playButton);
-
-//        JPanel tablePanel = new JPanel(); //Панель с таблицей (трек-листом)
-//        tablePanel.add(scrollPaneForTrackList);
+        buttonsPanel.add(stopButton);
 
         mainPlayerWindow.getContentPane().add(buttonsPanel);
-//        mainPlayerWindow.getContentPane().add(tablePanel);
         mainPlayerWindow.pack();
         mainPlayerWindow.show();
 
@@ -162,20 +151,33 @@ public class BootPlayer extends JFrame implements ActionListener {
             }
         }
 
-        if (e.getSource() == playButton & trackListTable.
-                isCellSelected(trackListTable.getSelectedRow(),trackListTable.getSelectedColumn()))
+        if (e.getSource() == stopButton)
         {
+            PlaySoundMp3.stopMp3();
+            canPlay = true;
+        }
+
+        if ((e.getSource() == playButton & trackListTable.
+                isCellSelected(trackListTable.getSelectedRow(),trackListTable.getSelectedColumn())))
+        {
+            if (!canPlay)
+            {
+                PlaySoundMp3.stopMp3();
+                canPlay = true;
+            }
+
             selectedCellPath =  trackListTable.getValueAt(trackListTable.getSelectedRow(),1).toString();
 
+            Thread thread = new Thread(new Runner());
             thread.start();
-
+            canPlay = false;
         }
     }
 
     class Runner implements Runnable
     {
         @Override
-        public void run(){
+       synchronized public void run(){
             if (selectedCellPath.trim().endsWith(".mp3")){
                 PlaySoundMp3.playMp3(selectedCellPath.trim());
             }
